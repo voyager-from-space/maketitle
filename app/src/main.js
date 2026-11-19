@@ -158,10 +158,10 @@ function startEngine() {
   state.compiler = new Compiler({
     base: BASE,
     onDownload: (p) => { if (p.percent < 100) status(`Loading TeX Live… ${p.percent}% (${mb(state.compiler.netBytes)} MB downloaded)`, 'busy'); },
-    onNet: (n) => { const e = $('#m-load'); if (e && !state.engineReady) e.textContent = `downloaded ${mb(n)} MB`; },
+    onNet: (n) => { const e = $('#m-load'); if (e && !state.engineReady) e.textContent = `downloaded ${mb(n)} MB`; state.firstLoadBytes = n; const t = $('#m-net'); if (t) t.textContent = `TeX Live download: ${mb(n)} MB`; },
   });
   state.engineStart = performance.now();
-  state.compiler.init().then((ms) => { state.engineReady = true; state.initMs = ms; state.firstLoadBytes = state.compiler.netBytes; }).catch((e) => status('TeX engine failed to start: ' + e.message, 'bad'));
+  state.compiler.init().then((ms) => { state.engineReady = true; state.initMs = ms; }).catch((e) => status('TeX engine failed to start: ' + e.message, 'bad'));
 }
 
 async function loaded(project) {
@@ -205,7 +205,6 @@ async function compile(first = false) {
   let r;
   try { r = await state.compiler.compile(state.project, { full }); } catch (e) { r = { ok: false, error: e.message, errors: [], passes: [], totalMs: 0 }; }
   state.last = r; state.busy = false; $('#run').disabled = false;
-  if (state.compiler.netBytes && !state.firstLoadBytes) state.firstLoadBytes = state.compiler.netBytes;
   if (r.ok) {
     const pages = await state.preview.show(r.pdf);
     r.numPages = pages; $('#dlpdf').disabled = false; r.shown = true;
@@ -229,7 +228,7 @@ function renderMeter(r) {
   add(`${r.undefinedRefs || 0} unresolved ref${r.undefinedRefs === 1 ? '' : 's'}`, r.undefinedRefs ? 'warnc' : '');
   add(`${r.warnings || 0} warnings`);
   if (warn) add(warn, 'wide');
-  if (state.firstLoadBytes) add(`TeX Live download: ${mb(state.firstLoadBytes)} MB`);
+  if (state.firstLoadBytes) { add(`TeX Live download: ${mb(state.firstLoadBytes)} MB`); m.lastChild.id = 'm-net'; }
 }
 
 function renderProblems(r) {

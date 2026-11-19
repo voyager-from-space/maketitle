@@ -47,6 +47,7 @@ export class Compiler {
     const t0 = performance.now();
     const tool = new Eng(this.runner);
     let r, error = null;
+    if (!this.useExtra && await this.needsExtra(project)) this.useExtra = true;
     const rec = abs(this.base + 'core/texlive-recommended.js'), extra = abs(this.base + 'core/texlive-extra.js');
     const attempt = async () => {
       this.marks = [];
@@ -69,6 +70,21 @@ export class Compiler {
       usedExtra: !!this.useExtra, firstTry: this.firstTry, engine: project.engine === 'xe' ? 'XeLaTeX' : project.engine === 'lua' ? 'LuaLaTeX' : 'pdfLaTeX',
       ...parseLog(r), netBytes: this.netBytes,
     };
+  }
+  // package names the project asks for that only the big "extra" TeX Live set provides
+  async needsExtra(project) {
+    if (!this.index) {
+      const get = async (n) => new Set([...(await (await fetch(abs(this.base + 'core/texlive-' + n + '.js.providespackage.txt'))).text()).matchAll(/\\ProvidesPackage\{([^}]+)\}/g)].map((m) => m[1].toLowerCase().trim()));
+      try { const [extra, rec, basic] = await Promise.all([get('extra'), get('recommended'), get('basic')]); this.index = { extra, rec, basic }; } catch { this.index = { extra: new Set(), rec: new Set(), basic: new Set() }; }
+    }
+    const { extra, rec, basic } = this.index;
+    for (const [p, t] of project.texts()) {
+      if (!/\.(tex|ltx|sty|cls)$/i.test(p)) continue;
+      for (const m of t.matchAll(/\\(?:usepackage|RequirePackage)\s*(?:\[[^\]]*\])?\s*\{([^}]*)\}/g)) {
+        for (const n of m[1].split(',').map((x) => x.trim().toLowerCase())) if (n && extra.has(n) && !rec.has(n) && !basic.has(n)) return true;
+      }
+    }
+    return false;
   }
   terminate() { try { this.runner.terminate(); } catch {} }
 }
