@@ -1,0 +1,232 @@
+{
+ "site": "https://maketitle.vercel.app/",
+ "id": "1706.03762",
+ "startedAt": "Thu Nov 19 2026 18:02:12 GMT+0530 (India Standard Time)",
+ "A": {
+  "ok": true,
+  "totalMs": 5001,
+  "pages": 15,
+  "netMB": 416.6,
+  "sw": {
+   "controlled": true,
+   "caches": [
+    "mt-shell-8a39e914c1",
+    "mt-core-v2",
+    "mt-assets-v1"
+   ],
+   "core": 13,
+   "assets": 2
+  },
+  "idbAfterLoad": [
+   {
+    "key": "1706.03762",
+    "edited": false,
+    "files": 23,
+    "savedAt": 1795091536686,
+    "title": "Attention Is All You Need"
+   }
+  ],
+  "timing": {
+   "rows": [
+    "1. TeX 1.33 s",
+    "2. TeX 1.17 s",
+    "3. TeX 1.16 s",
+    "4. TeX 1.24 s",
+    "Setup, package load 0.10 s"
+   ],
+   "kv": "Build | Full build | Engine | pdfLaTeX | Total | 5.00 s | Engine start | 26.0 s | Source | fetched in 1.55 s | TeX Live downloaded | 417 MB | PDF | 1.7 MB, 15 pages",
+   "finds": 5,
+   "text": [
+    "Most repeated warnings",
+    "What can make this project slow"
+   ]
+  },
+  "preview": {
+   "ok": true,
+   "mode": "quick",
+   "passes": [
+    {
+     "cmd": "pdflatex",
+     "ms": 1182
+    }
+   ],
+   "totalMs": 1308,
+   "pages": 15
+  },
+  "fullWarm": {
+   "ok": true,
+   "totalMs": 4664,
+   "passes": [
+    {
+     "cmd": "pdflatex",
+     "ms": 1169
+    },
+    {
+     "cmd": "pdflatex",
+     "ms": 1155
+    },
+    {
+     "cmd": "pdflatex",
+     "ms": 1125
+    },
+    {
+     "cmd": "pdflatex",
+     "ms": 1121
+    }
+   ],
+   "pages": 15
+  },
+  "texFiles": [
+   "background.tex",
+   "introduction.tex",
+   "model_architecture.tex",
+   "parameter_attention.tex",
+   "results.tex",
+   "sqrt_d_trick.tex",
+   "training.tex",
+   "visualizations.tex",
+   "why_self_attention.tex"
+  ],
+  "chapter": {
+   "file": "background.tex",
+   "ok": true,
+   "totalMs": 1683,
+   "passes": [
+    {
+     "cmd": "pdflatex",
+     "ms": 404
+    },
+    {
+     "cmd": "pdflatex",
+     "ms": 393
+    },
+    {
+     "cmd": "pdflatex",
+     "ms": 396
+    },
+    {
+     "cmd": "pdflatex",
+     "ms": 396
+    }
+   ],
+   "pages": 1,
+   "status": "Compiled in 1.7 s · 1 page · background.tex only",
+   "meter": "pdfLaTeX | one file only: no bibliography run | only background.tex: cites and refs to other files show as ? | TeX 0.4 s → TeX 0.4 s → TeX 0.4 s → TeX 0.4 s | total 1.7 s | 13 unresolved refs | 16 warnings | 2× Package natbib Warning: Citation `NalBytenet2017' undefined on input | 2× Package natbib Warning: Citation `JonasFaceNet2017' undefined on inpu | 1× Package epstopdf Warning: Shell escape feature is not enabled. | TeX Live download: 417 MB | Saved in this browser"
+  },
+  "savedAfterEdit": [
+   {
+    "key": "1706.03762",
+    "edited": true,
+    "files": 23,
+    "savedAt": 1795091578396,
+    "title": "Attention Is Saved Offline"
+   }
+  ],
+  "reloadAfterMs": 0,
+  "reload": {
+   "title": "Attention Is Saved Offline",
+   "fromSaved": true,
+   "notice": "Opened your edited copy saved in this browser just now. Start over from arXiv Dismiss",
+   "ok": true,
+   "totalMs": 4812,
+   "netMB": 0
+  },
+  "pdfView": {
+   "cls": "editor view-pdf",
+   "sourceVisible": false,
+   "treeVisible": false,
+   "pdfWidth": 1280,
+   "pages": 15,
+   "fromSaved": true
+  },
+  "pdfToEdit": {
+   "url": "/abs/1706.03762",
+   "cls": "editor view-abs",
+   "sourceVisible": true,
+   "sameDoc": true
+  },
+  "pdfDownload": "1706.03762.pdf"
+ },
+ "B": {
+  "home": {
+   "saved": [
+    "1706.03762 edited 1 min ago Remove"
+   ],
+   "title": "maketitle"
+  },
+  "abs": {
+   "ok": true,
+   "fromSaved": true,
+   "title": "Attention Is Saved Offline",
+   "totalMs": 4778,
+   "pages": 15,
+   "netMB": 0,
+   "online": true,
+   "controlled": true
+  },
+  "wallMs": 14705,
+  "pdf": {
+   "cls": "editor view-pdf",
+   "ok": true,
+   "pages": 15
+  }
+ },
+ "M": {
+  "homeOverflow": {
+   "sw": 390,
+   "iw": 390,
+   "bodySw": 390
+  },
+  "afterCompileTab": "source",
+  "pdfOverflow": {
+   "sw": 390,
+   "iw": 390,
+   "bodySw": 390
+  },
+  "pdfPageWidth0": 370,
+  "sourceOverflow": {
+   "sw": 390,
+   "iw": 390,
+   "bodySw": 390
+  },
+  "filesOverflow": {
+   "sw": 390,
+   "iw": 390,
+   "bodySw": 390
+  },
+  "targets": {
+   "#mode": "130x44",
+   "#run": "88x44",
+   "#timing": "66x44",
+   "#more summary": "64x44",
+   "#tabs [data-tab=files]": "130x52",
+   "#tabs [data-tab=source]": "130x52",
+   "#tabs [data-tab=pdf]": "130x52"
+  },
+  "cmFont": "15px",
+  "pdfPageWidth": 370,
+  "compile": {
+   "ok": true,
+   "usedExtra": true,
+   "ms": 4876,
+   "fromSaved": true,
+   "net": 0
+  },
+  "timingOverflow": {
+   "sw": 390,
+   "iw": 390,
+   "bodySw": 390
+  },
+  "pdfViewTab": {
+   "tab": "pdf",
+   "tabsVisible": false
+  },
+  "pdfViewOverflow": {
+   "sw": 390,
+   "iw": 390,
+   "bodySw": 390
+  }
+ },
+ "consoleErrors": [],
+ "finishedAt": "Thu Nov 19 2026 18:05:16 GMT+0530 (India Standard Time)"
+}

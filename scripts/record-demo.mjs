@@ -9,7 +9,10 @@ const opts = { executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'],
 const done = (page) => page.waitForFunction(() => window.__mt && window.__mt.last && !window.__mt.busy && window.__mt.last.shown, null, { timeout: 600000 });
 { // warm-up
   const ctx = await chromium.launchPersistentContext(dir, opts); const p = await ctx.newPage();
-  await p.goto(site + 'abs/1706.03762'); await done(p); await ctx.close();
+  await p.goto(site + 'abs/1706.03762'); await done(p);
+  await p.goto(site + 'about-blank-for-cleanup.txt').catch(() => {}); await p.goto(site); await p.waitForTimeout(1500);
+  await p.evaluate(() => new Promise((r) => { const q = indexedDB.deleteDatabase('maketitle'); q.onsuccess = q.onerror = () => r(); setTimeout(r, 8000); })); // keep the TeX Live cache, forget the saved paper so the clip shows a real fetch
+  await ctx.close();
 }
 const ctx = await chromium.launchPersistentContext(dir, { ...opts, recordVideo: { dir: path.join(dir, 'vid'), size: { width: 1280, height: 720 } } });
 const page = await ctx.newPage(); const t0 = Date.now(); const stamp = {};

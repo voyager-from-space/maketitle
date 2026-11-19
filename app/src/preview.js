@@ -24,7 +24,7 @@ export class Preview {
     this.el.replaceChildren();
     const first = await doc.getPage(1);
     const cw = this.el.clientWidth; this.usedW = cw;
-    const w = Math.max(200, cw - (cw < 560 ? 20 : 40));
+    const w = Math.min(980, Math.max(200, cw - (cw < 560 ? 20 : 40))); // a page wider than ~980 px only gets blurry and slow to draw
     if (!cw) { this.usedW = 0; }
     for (let i = 1; i <= doc.numPages; i++) {
       const box = document.createElement('div');
