@@ -54,6 +54,21 @@ export class Project {
     const m = /\\title\s*(?:\[[^\]]*\])?\s*\{((?:[^{}]|\{[^{}]*\})*)\}/.exec(t);
     return m ? m[1].replace(/\\\\|\\(?:thanks|footnote)\{[^}]*\}/g, ' ').replace(/[{}\\]/g, '').replace(/\s+/g, ' ').trim() : '';
   }
+  static fromEntries(entries, meta = {}) {
+    const p = Object.create(Project.prototype);
+    p.meta = meta; p.files = new Map(entries); p.main = p.findMain(); p.engine = p.detectEngine();
+    return p;
+  }
+  toEntries() { return [...this.files]; }
+  // the main file's preamble plus one \input of the open file, so one chapter compiles alone
+  chapterWrapper(path) {
+    const main = this.files.get(this.main) || '';
+    const i = main.search(/\\begin\s*\{document\}/);
+    const dir = this.main.includes('/') ? this.main.slice(0, this.main.lastIndexOf('/') + 1) : '';
+    const rel = (path.startsWith(dir) ? path.slice(dir.length) : path).replace(/\.tex$/i, '');
+    return { path: dir + 'mt-chapter.tex', text: main.slice(0, i < 0 ? main.length : i) + '\\begin{document}\n\\input{' + rel + '}\n\\end{document}\n' };
+  }
+  allFiles() { return [...this.files].map(([path, content]) => ({ path, content })); }
   // files for the compiler: everything but the main file
   forCompile() {
     const out = [];

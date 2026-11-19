@@ -6,7 +6,14 @@ export class Preview {
     this.el = el; pdfjs.GlobalWorkerOptions.workerSrc = workerSrc; this.doc = null; this.gen = 0; this.pages = 0;
     this.io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) this.draw(e.target); }), { root: el, rootMargin: '600px 0px' });
   }
+  // draw again at the pane's current width (window resized, or the PDF tab was hidden when the PDF arrived)
+  relayout() {
+    if (!this.bytes || this.busyLayout) return;
+    const w = this.el.clientWidth; if (!w || (this.usedW && Math.abs(w - this.usedW) < 8)) return;
+    this.show(this.bytes);
+  }
   async show(bytes) {
+    this.bytes = bytes;
     const gen = ++this.gen;
     const doc = await pdfjs.getDocument({ data: bytes.slice() }).promise;
     if (gen !== this.gen) return;
@@ -16,7 +23,9 @@ export class Preview {
     this.doc = doc; this.pages = doc.numPages;
     this.el.replaceChildren();
     const first = await doc.getPage(1);
-    const w = Math.max(240, this.el.clientWidth - 40);
+    const cw = this.el.clientWidth; this.usedW = cw;
+    const w = Math.max(200, cw - (cw < 560 ? 20 : 40));
+    if (!cw) { this.usedW = 0; }
     for (let i = 1; i <= doc.numPages; i++) {
       const box = document.createElement('div');
       box.className = 'pdfpage'; box.dataset.n = i;
@@ -29,6 +38,9 @@ export class Preview {
     return doc.numPages;
   }
   async draw(box) {
+    try { await this.drawPage(box); } catch (e) { if (!/RenderingCancelled|destroyed|Worker was terminated/i.test(String((e && (e.name + e.message)) || e))) throw e; } // a re-layout replaced this page mid-render
+  }
+  async drawPage(box) {
     if (box.dataset.done) return; box.dataset.done = '1';
     const doc = this.doc; const page = await doc.getPage(Number(box.dataset.n));
     const w = box.clientWidth; const base = page.getViewport({ scale: 1 });

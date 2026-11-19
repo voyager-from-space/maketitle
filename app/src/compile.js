@@ -5,15 +5,30 @@ const abs = (p) => new URL(p, location.href).href;
 
 export class Compiler {
   constructor({ base, onDownload, onNet }) {
-    this.base = base; this.onNet = onNet || (() => {}); this.netBytes = 0;
+    this.base = base; this.onNet = onNet || (() => {}); this.onDownload = onDownload; this.netBytes = 0;
     this.marks = [];
-    this.runner = new BusyTexRunner({
+    this.runner = null; this.ready = null; this.restarts = 0; this.useExtra = false;
+  }
+  // pick the preload set from the project, then start the engine: one module load instead of two when the big set is needed
+  async prepare(project) {
+    if (this.ready) return this.ready;
+    if (!this.prep) this.prep = (async () => { this.useExtra = await this.needsExtra(project); this.runner = this.makeRunner(); return this.init(); })();
+    return this.prep;
+  }
+  makeRunner() {
+    const base = this.base;
+    return new BusyTexRunner({
       busytexBasePath: abs(base + 'core').replace(/\/$/, ''),
-      preloadDataPackages: [abs(base + 'core/texlive-recommended.js')],
+      preloadDataPackages: this.useExtra ? [abs(base + 'core/texlive-recommended.js'), abs(base + 'core/texlive-extra.js')] : [abs(base + 'core/texlive-recommended.js')],
       catalogDataPackages: [abs(base + 'core/texlive-recommended.js'), abs(base + 'core/texlive-extra.js')],
-      onDownloadProgress: onDownload || (() => {}),
+      onDownloadProgress: this.onDownload || (() => {}),
     });
-    this.ready = null;
+  }
+  // a fresh worker: used when a TeX Live package that is cached in this browser did not mount (seen on cold starts)
+  async restart() {
+    try { this.runner.terminate(); } catch {}
+    this.runner = this.makeRunner(); this.ready = null; this.prep = null; this._hooked = null; this.restarts++;
+    return this.init();
   }
   init() {
     if (!this.ready) {
@@ -29,7 +44,7 @@ export class Compiler {
     return this.ready;
   }
   hookWorker() {
-    const w = this.runner.worker;
+    const w = this.runner && this.runner.worker;
     if (!w || this._hooked === w) return;
     this._hooked = w;
     w.addEventListener('message', ({ data }) => {
@@ -37,15 +52,20 @@ export class Compiler {
       else if (data && typeof data.print === 'string') this.marks.push({ t: performance.now(), msg: data.print });
     });
   }
-  async compile(project, { full = true, files = null } = {}) {
-    await this.init();
+  async compile(project, { mode = 'full', chapter = null } = {}) {
+    await this.prepare(project);
     this.hookWorker();
     const Eng = project.engine === 'xe' ? XeLatex : project.engine === 'lua' ? LuaLatex : PdfLatex;
-    const plan = full ? project.bibPlan() : { bibtex: false, biber: false, why: 'quick preview: one pass, no bibliography' };
-    const main = project.main;
+    const full = mode === 'full';
+    const plan = full ? project.bibPlan() : { bibtex: false, biber: false, why: mode === 'chapter' ? 'one file only: no bibliography run' : 'preview: one pass, no bibliography' };
+    // single-chapter build: the main preamble plus an \input of the open file
+    const wrap = mode === 'chapter' && chapter ? project.chapterWrapper(chapter) : null;
+    const main = wrap ? wrap.path : project.main;
+    const input = wrap ? wrap.text : project.files.get(main);
+    const files = wrap ? project.allFiles() : project.forCompile();
     this.marks = [];
     const t0 = performance.now();
-    const tool = new Eng(this.runner);
+    let tool = new Eng(this.runner);
     let r, error = null;
     if (!this.useExtra && await this.needsExtra(project)) this.useExtra = true;
     const rec = abs(this.base + 'core/texlive-recommended.js'), extra = abs(this.base + 'core/texlive-extra.js');
@@ -53,8 +73,8 @@ export class Compiler {
       this.marks = [];
       try {
         r = await tool.compile({
-          input: project.files.get(main), mainTexPath: main, additionalFiles: files || project.forCompile(),
-          bibtex: plan.bibtex, biber: plan.biber, rerun: full, dataPackagesJs: this.useExtra ? [rec, extra] : [rec],
+          input, mainTexPath: main, additionalFiles: files,
+          bibtex: plan.bibtex, biber: plan.biber, rerun: mode !== 'quick', dataPackagesJs: this.useExtra ? [rec, extra] : [rec],
         });
         error = null;
       } catch (e) { error = String(e && e.message || e); }
@@ -62,11 +82,20 @@ export class Compiler {
     await attempt();
     // the extra TeX Live set (pgfplots, beamer, biblatex, ...) is ~260 MB: only fetch it when the small set was not enough
     if (!this.useExtra && !(r && r.success && r.pdf)) { this.firstTry = { error, ...parseLog(r), log: ((r && r.log) || '').slice(-1500) }; this.useExtra = true; this.retriedWithExtra = true; await attempt(); }
+    // "file not found" for a file the TeX Live sets do provide means a cached data package did not mount: restart the worker, once or twice
+    const missing = () => { const m = /File `([^']+?)(?:\.(?:sty|cls|def|cfg|clo|fd))?' not found/.exec((r && r.log) || ''); return m ? m[1].toLowerCase() : null; };
+    let engineRestarts = 0;
+    while (!(r && r.success && r.pdf) && engineRestarts < 2) {
+      const miss = missing(); const idx = this.index;
+      if (!miss || !idx || !(idx.extra.has(miss) || idx.rec.has(miss) || idx.basic.has(miss))) break;
+      engineRestarts++; this.useExtra = this.useExtra || idx.extra.has(miss);
+      await this.restart(); tool = new Eng(this.runner); await attempt();
+    }
     const totalMs = Math.round(performance.now() - t0);
     const passes = passTimes(this.marks);
     const log = (r && r.log) || '';
     return {
-      ok: !!(r && r.success && r.pdf), pdf: r && r.pdf, log, error, totalMs, passes, plan,
+      ok: !!(r && r.success && r.pdf), pdf: r && r.pdf, log, error, totalMs, passes, plan, mode, chapter: wrap ? chapter : null, initMs: this.initMs, engineRestarts,
       usedExtra: !!this.useExtra, firstTry: this.firstTry, engine: project.engine === 'xe' ? 'XeLaTeX' : project.engine === 'lua' ? 'LuaLaTeX' : 'pdfLaTeX',
       ...parseLog(r), netBytes: this.netBytes,
     };
@@ -86,7 +115,7 @@ export class Compiler {
     }
     return false;
   }
-  terminate() { try { this.runner.terminate(); } catch {} }
+  terminate() { try { this.runner && this.runner.terminate(); } catch {} }
 }
 
 function passTimes(marks) {

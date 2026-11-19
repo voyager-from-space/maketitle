@@ -8,7 +8,14 @@ export function parseId(s) {
   const a = new RegExp('^' + NEW.source + '$').exec(s) || new RegExp('^' + OLD.source + '$').exec(s);
   return a ? a[1] + (a[2] || '') : null;
 }
+// arXiv's terms ask for at most one automated request every 3 seconds: keep that even across tabs
+async function politeWait() {
+  const last = Number(localStorage.getItem('mt-last-arxiv') || 0); const wait = last + 3000 - Date.now();
+  if (wait > 0 && wait < 3000) await new Promise((r) => setTimeout(r, wait));
+  localStorage.setItem('mt-last-arxiv', String(Date.now()));
+}
 export async function fetchSource(id, onProgress) {
+  await politeWait();
   const url = 'https://arxiv.org/src/' + id;
   let res;
   try { res = await fetch(url); } catch (e) { throw new Error('Could not reach arXiv from this browser (' + e.message + ').'); }
