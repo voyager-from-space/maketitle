@@ -823,7 +823,7 @@ Module['FS_createPath']("/opt/perl-wasm/lib/site_perl/5.38.2/namespace", "clean"
 
           return new Promise((resolve, reject) => {
             for (var chunkId = 0; chunkId < chunkCount; chunkId++) {
-              var getRequest = packages.get(`package/${packageName}/${chunkId}`);
+              var getRequest = packages.get(`package/${packageName}/${chunkId}`); getRequest.mt_idx = chunkId; /* maketitle: remember which chunk this is */
               getRequest.onsuccess = (event) => {
                 if (!event.target.result) {
                   reject(`CachedPackageNotFound for: ${packageName}`);
@@ -835,7 +835,7 @@ Module['FS_createPath']("/opt/perl-wasm/lib/site_perl/5.38.2/namespace", "clean"
                 } else {
                   chunksDone++;
                   totalSize += event.target.result.byteLength;
-                  chunks.push(event.target.result);
+                  chunks[event.target.mt_idx] = event.target.result; /* maketitle: chunks can finish out of order, keep them in place */
                   if (chunksDone == chunkCount) {
                     if (chunksDone == 1) {
                       resolve(event.target.result);
