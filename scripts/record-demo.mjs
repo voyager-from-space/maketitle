@@ -25,6 +25,7 @@ await page.evaluate(() => { const v = window.__mt.editor.view; const t = v.state
 await page.waitForTimeout(900); await page.keyboard.type('Not ', { delay: 140 }); await page.waitForTimeout(700); await still('4-edited');
 await page.keyboard.press('Control+Enter');
 await done(page); await page.waitForTimeout(2800); await still('5-recompiled');
+await page.waitForFunction(() => window.__mt.preview.doc && !window.__mt.busy);
 const total = Date.now() - t0;
 const rec = await page.evaluate(async () => { const l = window.__mt.last; const pg = await window.__mt.preview.doc.getPage(1); const tc = await pg.getTextContent(); return { totalMs: l.totalMs, newTitle: tc.items.map((i) => i.str).join('').replace(/\s+/g, '').includes('AttentionIsNotAllYouNeed') }; });
 const video = page.video(); await ctx.close(); const webm = await video.path(); fs.copyFileSync(webm, path.join(out, 'maketitle-launch-demo.webm'));

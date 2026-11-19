@@ -88,7 +88,7 @@ function renderEditor(label) {
   $('#run').onclick = () => compile();
   $('#dlpdf').onclick = () => state.last && state.last.pdf && save(state.last.pdf, (state.id || 'paper').replace(/\//g, '_') + '.pdf', 'application/pdf');
   $('#dlzip').onclick = downloadZip;
-  document.addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); compile(); } });
+  document.addEventListener('keydown', (e) => { if (!e.defaultPrevented && (e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); compile(); } });
 }
 const status = (txt, kind = '') => { const s = $('#status'); if (s) { s.textContent = txt; s.className = 'status ' + kind; } };
 
