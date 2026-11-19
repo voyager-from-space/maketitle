@@ -27,7 +27,7 @@ export class Compiler {
   // a fresh worker: used when a TeX Live package that is cached in this browser did not mount (seen on cold starts)
   async restart() {
     try { this.runner.terminate(); } catch {}
-    this.runner = this.makeRunner(); this.ready = null; this.prep = null; this._hooked = null; this.restarts++;
+    this.netBase = this.netBytes; this.runner = this.makeRunner(); this.ready = null; this.prep = null; this._hooked = null; this.restarts++;
     return this.init();
   }
   init() {
@@ -48,7 +48,7 @@ export class Compiler {
     if (!w || this._hooked === w) return;
     this._hooked = w;
     w.addEventListener('message', ({ data }) => {
-      if (data && data.mt_net != null) { this.netBytes = data.mt_net; this.onNet(this.netBytes); }
+      if (data && data.mt_net != null) { this.netBytes = (this.netBase || 0) + data.mt_net; this.onNet(this.netBytes); }
       else if (data && typeof data.print === 'string') this.marks.push({ t: performance.now(), msg: data.print });
     });
   }

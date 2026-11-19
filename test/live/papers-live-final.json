@@ -1,0 +1,222 @@
+[
+ {
+  "id": "1706.03762",
+  "wallMs": 41583,
+  "ok": true,
+  "pages": 15,
+  "totalMs": 4711,
+  "passes": [
+   {
+    "cmd": "pdflatex",
+    "ms": 1264
+   },
+   {
+    "cmd": "pdflatex",
+    "ms": 1102
+   },
+   {
+    "cmd": "pdflatex",
+    "ms": 1100
+   },
+   {
+    "cmd": "pdflatex",
+    "ms": 1154
+   }
+  ],
+  "undefinedRefs": 0,
+  "warnings": 1,
+  "errors": [],
+  "engine": "pdfLaTeX",
+  "usedExtra": true,
+  "plan": "no bibliography run needed",
+  "firstLoadMB": 416.6,
+  "initMs": 31103,
+  "fetchMs": 1532,
+  "main": "ms.tex",
+  "files": 23,
+  "leaks": 3,
+  "err": null,
+  "titleBefore": "Attention Is All You Need",
+  "recompileMs": 4757,
+  "recompile": {
+   "totalMs": 4459,
+   "passes": [
+    {
+     "cmd": "pdflatex",
+     "ms": 1101
+    },
+    {
+     "cmd": "pdflatex",
+     "ms": 1090
+    },
+    {
+     "cmd": "pdflatex",
+     "ms": 1090
+    },
+    {
+     "cmd": "pdflatex",
+     "ms": 1095
+    }
+   ],
+   "ok": true
+  },
+  "pdfHasNewTitle": true,
+  "consoleErrors": []
+ },
+ {
+  "id": "1512.03385",
+  "wallMs": 14769,
+  "ok": true,
+  "pages": 12,
+  "totalMs": 2741,
+  "passes": [
+   {
+    "cmd": "pdflatex",
+    "ms": 763
+   },
+   {
+    "cmd": "pdflatex",
+    "ms": 627
+   },
+   {
+    "cmd": "pdflatex",
+    "ms": 614
+   },
+   {
+    "cmd": "pdflatex",
+    "ms": 636
+   }
+  ],
+  "undefinedRefs": 0,
+  "warnings": 21,
+  "errors": [],
+  "engine": "pdfLaTeX",
+  "usedExtra": true,
+  "plan": "ready-made .bbl",
+  "firstLoadMB": null,
+  "initMs": 10116,
+  "fetchMs": 296,
+  "main": "residual_v1_arxiv_release.tex",
+  "files": 13,
+  "leaks": 5,
+  "err": null,
+  "consoleErrors": []
+ },
+ {
+  "id": "1810.04805",
+  "wallMs": 16429,
+  "ok": true,
+  "pages": 16,
+  "totalMs": 4308,
+  "passes": [
+   {
+    "cmd": "pdflatex",
+    "ms": 1131
+   },
+   {
+    "cmd": "pdflatex",
+    "ms": 1013
+   },
+   {
+    "cmd": "pdflatex",
+    "ms": 1022
+   },
+   {
+    "cmd": "pdflatex",
+    "ms": 1061
+   }
+  ],
+  "undefinedRefs": 0,
+  "warnings": 39,
+  "errors": [],
+  "engine": "pdfLaTeX",
+  "usedExtra": true,
+  "plan": "ready-made .bbl",
+  "firstLoadMB": null,
+  "initMs": 10242,
+  "fetchMs": 276,
+  "main": "main.tex",
+  "files": 28,
+  "leaks": 3,
+  "err": null,
+  "consoleErrors": []
+ },
+ {
+  "id": "2106.09685",
+  "wallMs": 15982,
+  "ok": true,
+  "pages": 26,
+  "totalMs": 3785,
+  "passes": [
+   {
+    "cmd": "pdflatex",
+    "ms": 1020
+   },
+   {
+    "cmd": "pdflatex",
+    "ms": 884
+   },
+   {
+    "cmd": "pdflatex",
+    "ms": 897
+   },
+   {
+    "cmd": "pdflatex",
+    "ms": 898
+   }
+  ],
+  "undefinedRefs": 0,
+  "warnings": 32,
+  "errors": [],
+  "engine": "pdfLaTeX",
+  "usedExtra": true,
+  "plan": "ready-made .bbl",
+  "firstLoadMB": null,
+  "initMs": 10130,
+  "fetchMs": 353,
+  "main": "iclr2022_conference.tex",
+  "files": 18,
+  "leaks": 3,
+  "err": null,
+  "consoleErrors": []
+ },
+ {
+  "id": "2310.06825",
+  "wallMs": 31173,
+  "ok": true,
+  "pages": 9,
+  "totalMs": 18686,
+  "passes": [
+   {
+    "cmd": "pdflatex",
+    "ms": 4843
+   },
+   {
+    "cmd": "pdflatex",
+    "ms": 4557
+   },
+   {
+    "cmd": "pdflatex",
+    "ms": 4627
+   },
+   {
+    "cmd": "pdflatex",
+    "ms": 4564
+   }
+  ],
+  "undefinedRefs": 0,
+  "warnings": 4,
+  "errors": [],
+  "engine": "pdfLaTeX",
+  "usedExtra": true,
+  "plan": "ready-made .bbl",
+  "firstLoadMB": null,
+  "initMs": 10314,
+  "fetchMs": 513,
+  "main": "main.tex",
+  "files": 11,
+  "leaks": 1,
+  "err": null,
+  "consoleErrors": []
+ }
+]
