@@ -1,16 +1,16 @@
 {
  "site": "https://maketitle.vercel.app/",
  "id": "1706.03762",
- "startedAt": "Thu Nov 19 2026 18:16:03 GMT+0530 (India Standard Time)",
+ "startedAt": "Thu Nov 19 2026 18:24:09 GMT+0530 (India Standard Time)",
  "A": {
   "ok": true,
-  "totalMs": 17153,
+  "totalMs": 4801,
   "pages": 15,
-  "netMB": 0,
+  "netMB": 416.6,
   "sw": {
    "controlled": true,
    "caches": [
-    "mt-shell-3fb94baa55",
+    "mt-shell-1245600565",
     "mt-core-v2",
     "mt-assets-v1"
    ],
@@ -22,19 +22,19 @@
     "key": "1706.03762",
     "edited": false,
     "files": 23,
-    "savedAt": 1795092368075,
+    "savedAt": 1795092853697,
     "title": "Attention Is All You Need"
    }
   ],
   "timing": {
    "rows": [
-    "1. TeX 1.43 s",
-    "2. TeX 1.24 s",
-    "3. TeX 1.25 s",
-    "4. TeX 1.24 s",
-    "Setup, package load 12.0 s"
+    "1. TeX 1.31 s",
+    "2. TeX 1.14 s",
+    "3. TeX 1.09 s",
+    "4. TeX 1.16 s",
+    "Setup, package load 0.10 s"
    ],
-   "kv": "Build | Full build | Engine | pdfLaTeX | Total | 17.2 s | Engine start | 10.8 s | Source | fetched in 1.47 s | Engine restarts | 1 (a cached TeX Live package did not mount; started a fresh worker) | TeX Live downloaded | none (cached) | PDF | 1.7 MB, 15 pages",
+   "kv": "Build | Full build | Engine | pdfLaTeX | Total | 4.80 s | Engine start | 21.5 s | Source | fetched in 1.94 s | TeX Live downloaded | 417 MB | PDF | 1.7 MB, 15 pages",
    "finds": 5,
    "text": [
     "Most repeated warnings",
@@ -47,31 +47,31 @@
    "passes": [
     {
      "cmd": "pdflatex",
-     "ms": 1282
+     "ms": 1141
     }
    ],
-   "totalMs": 1545,
+   "totalMs": 1237,
    "pages": 15
   },
   "fullWarm": {
    "ok": true,
-   "totalMs": 4911,
+   "totalMs": 4529,
    "passes": [
     {
      "cmd": "pdflatex",
-     "ms": 1249
+     "ms": 1110
     },
     {
      "cmd": "pdflatex",
-     "ms": 1224
+     "ms": 1106
     },
     {
      "cmd": "pdflatex",
-     "ms": 1157
+     "ms": 1108
     },
     {
      "cmd": "pdflatex",
-     "ms": 1146
+     "ms": 1103
     }
    ],
    "pages": 15
@@ -90,35 +90,35 @@
   "chapter": {
    "file": "background.tex",
    "ok": true,
-   "totalMs": 1808,
+   "totalMs": 1640,
    "passes": [
     {
      "cmd": "pdflatex",
-     "ms": 478
+     "ms": 397
     },
     {
      "cmd": "pdflatex",
-     "ms": 412
+     "ms": 385
     },
     {
      "cmd": "pdflatex",
-     "ms": 408
+     "ms": 384
     },
     {
      "cmd": "pdflatex",
-     "ms": 412
+     "ms": 386
     }
    ],
    "pages": 1,
-   "status": "Compiled in 1.8 s · 1 page · background.tex only",
-   "meter": "pdfLaTeX | one file only: no bibliography run | only background.tex: cites and refs to other files show as ? | TeX 0.5 s → TeX 0.4 s → TeX 0.4 s → TeX 0.4 s | total 1.8 s | 13 unresolved refs | 16 warnings | 2× Package natbib Warning: Citation `NalBytenet2017' undefined on input | 2× Package natbib Warning: Citation `JonasFaceNet2017' undefined on inpu | 1× Package epstopdf Warning: Shell escape feature is not enabled. | Saved in this browser"
+   "status": "Compiled in 1.6 s · 1 page · background.tex only",
+   "meter": "pdfLaTeX | one file only: no bibliography run | only background.tex: cites and refs to other files show as ? | TeX 0.4 s → TeX 0.4 s → TeX 0.4 s → TeX 0.4 s | total 1.6 s | 13 unresolved refs | 16 warnings | 2× Package natbib Warning: Citation `NalBytenet2017' undefined on input | 2× Package natbib Warning: Citation `JonasFaceNet2017' undefined on inpu | 1× Package epstopdf Warning: Shell escape feature is not enabled. | TeX Live download: 417 MB | Saved in this browser"
   },
   "savedAfterEdit": [
    {
     "key": "1706.03762",
     "edited": true,
     "files": 23,
-    "savedAt": 1795092420165,
+    "savedAt": 1795092890147,
     "title": "Attention Is Saved Offline"
    }
   ],
@@ -128,7 +128,7 @@
    "fromSaved": true,
    "notice": "Opened your edited copy saved in this browser just now. Start over from arXiv Dismiss",
    "ok": true,
-   "totalMs": 16530,
+   "totalMs": 16002,
    "netMB": 0
   },
   "pdfView": {
@@ -158,13 +158,13 @@
    "ok": true,
    "fromSaved": true,
    "title": "Attention Is Saved Offline",
-   "totalMs": 5041,
+   "totalMs": 4759,
    "pages": 15,
    "netMB": 0,
    "online": true,
    "controlled": true
   },
-  "wallMs": 14979,
+  "wallMs": 14595,
   "pdf": {
    "cls": "editor view-pdf",
    "ok": true,
@@ -208,7 +208,7 @@
   "compile": {
    "ok": true,
    "usedExtra": true,
-   "ms": 5103,
+   "ms": 4738,
    "fromSaved": true,
    "net": 0
   },
@@ -228,5 +228,5 @@
   }
  },
  "consoleErrors": [],
- "finishedAt": "Thu Nov 19 2026 18:19:06 GMT+0530 (India Standard Time)"
+ "finishedAt": "Thu Nov 19 2026 18:26:50 GMT+0530 (India Standard Time)"
 }
