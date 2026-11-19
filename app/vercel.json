@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/abs/:path*", "destination": "/index.html" },
+    { "source": "/pdf/:path*", "destination": "/index.html" }
+  ]
+}

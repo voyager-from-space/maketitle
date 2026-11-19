@@ -3,9 +3,9 @@
 Swap `arxiv.org` for this site in any paper link and the paper's LaTeX source opens in an editor and compiles in your browser tab. You can also paste an arXiv id or drop a zip (Overleaf and Prism exports work). No account, no upload, no server compile.
 
     https://arxiv.org/abs/1706.03762
-    https://voyager-from-space.github.io/maketitle/abs/1706.03762
+    https://maketitle.vercel.app/abs/1706.03762
 
-Live: https://voyager-from-space.github.io/maketitle/
+Live: https://maketitle.vercel.app/ (static deploy on Vercel, no functions). Mirror: https://voyager-from-space.github.io/maketitle/ (same build with the base path `/maketitle/`, so the swapped link there is `/maketitle/abs/<id>`).
 
 ## What it does
 
@@ -28,7 +28,8 @@ Measured in Chrome (headless) on the build box, from the live site, counting byt
 
 ## Where things live
 
-- App: GitHub Pages of this repo, branch `gh-pages` (built by `scripts/deploy-pages.sh`).
+- App, primary: Vercel project `maketitle`, a static deploy of `node build.mjs --base /` (`app/vercel.json` rewrites `/abs/<id>` and `/pdf/<id>` to the app). No functions, no proxy.
+- App, mirror: GitHub Pages of this repo, branch `gh-pages` (built by `scripts/deploy-pages.sh`, base `/maketitle/`).
 - Engine and TeX Live data: [voyager-from-space/maketitle-assets](https://github.com/voyager-from-space/maketitle-assets), served from GitHub Pages as gzip streams cut into 80 MB parts (Pages rejects files over 100 MB). `app/public/core/busytex_worker.js` answers the engine's `fetch()` for `.data` and `.wasm` files by downloading the parts in order and gunzipping them with `DecompressionStream`.
 - GitHub Releases were tried first for the big files and do not work: the download redirect carries no CORS headers, so a browser page cannot fetch it.
 
@@ -41,8 +42,8 @@ Measured in Chrome (headless) on the build box, from the live site, counting byt
 
 ## Checks
 
-    node scripts/verify.mjs https://voyager-from-space.github.io/maketitle/ 1706.03762 --demo
-    node scripts/verify-zip.mjs https://voyager-from-space.github.io/maketitle/ test/zips/plain.zip
+    node scripts/verify.mjs https://maketitle.vercel.app/ 1706.03762 --demo
+    node scripts/verify-zip.mjs https://maketitle.vercel.app/ test/zips/plain.zip
     scripts/check-identity.sh
 
 ## Not in v1

@@ -10,5 +10,6 @@ cpSync('public', out, { recursive: true });
 cpSync('node_modules/pdfjs-dist/build/pdf.worker.min.mjs', out + '/pdf.worker.min.mjs');
 const html = readFileSync('index.template.html', 'utf8').replaceAll('%BASE%', base);
 writeFileSync(out + '/index.html', html); writeFileSync(out + '/404.html', html);
+if (base === '/') cpSync('vercel.json', out + '/vercel.json'); // Vercel mirror: rewrites for /abs/<id> and /pdf/<id>
 if (existsSync('first-load.json')) cpSync('first-load.json', out + '/mt-first-load.json');
 console.log('built', out, 'base', base);

@@ -8,3 +8,4 @@ proto/
 app/dist/
 app/node_modules/
 t.mjs
+app/dist-vercel/
