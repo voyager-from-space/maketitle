@@ -12,7 +12,8 @@ const nativeFetch = self.fetch.bind(self);
 let netBytes = 0;
 const notify = () => self.postMessage({ mt_net: netBytes });
 let lastNote = 0;
-const count = (n) => { netBytes += n; const t = Date.now(); if (t - lastNote > 250) { lastNote = t; notify(); } };
+let flush = null;
+const count = (n) => { netBytes += n; const t = Date.now(); if (t - lastNote > 250) { lastNote = t; notify(); } else if (!flush) flush = setTimeout(() => { flush = null; lastNote = Date.now(); notify(); }, 300); };
 
 function gunzipParts(urls) {
   let i = 0, reader = null, next = null;
