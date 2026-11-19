@@ -1,0 +1,7 @@
+\documentclass{article}
+\usepackage{tikz,pgfplots}\pgfplotsset{compat=1.18}
+\usetikzlibrary{arrows.meta,positioning,shapes}
+\begin{document}
+\begin{tikzpicture}\node[draw,circle](a){A};\node[draw,right=of a](b){B};\draw[-Stealth](a)--(b);\end{tikzpicture}
+\begin{tikzpicture}\begin{axis}\addplot[domain=0:6,samples=100]{sin(deg(x))};\end{axis}\end{tikzpicture}
+\end{document}
