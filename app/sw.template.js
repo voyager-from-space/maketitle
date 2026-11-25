@@ -5,7 +5,7 @@ const VERSION = '%VERSION%';
 const SHELL = 'mt-shell-' + VERSION;
 const CORE = 'mt-core-v2'; // engine files: large and rarely changing, kept across app updates
 const scope = self.registration.scope;
-const heavy = (url) => /\/core\/(texlive-[a-z]+\.js(\.providespackage\.txt)?|busytex\.js|texmf\.cnf)$/.test(url.pathname) || /\/fonts\//.test(url.pathname);
+const heavy = (url) => /\/core\/(busytex\.js|biber\.js|busytex_biber\.js|texmf\.cnf)$/.test(url.pathname) || /\/fonts\//.test(url.pathname);
 
 self.addEventListener('install', (e) => {
   e.waitUntil((async () => {

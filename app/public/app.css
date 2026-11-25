@@ -17,7 +17,7 @@ body.home { min-height: 100vh; background: var(--paper); color: var(--ink); font
 .home .top { padding: 24px 32px; }
 .wordmark { font-family: "EB Garamond", serif; font-style: italic; font-size: 22px; color: inherit; text-decoration: none; }
 .home main { max-width: 36rem; margin: 10vh auto 0; padding: 0 24px 64px; }
-.lead { font-size: 1.45rem; margin: 0 0 2rem; }
+.lead { font-size: 1.45rem; font-weight: 400; line-height: 1.35; margin: 0 0 2rem; }
 .strike { text-decoration: line-through; text-decoration-color: var(--proof); text-decoration-thickness: 2px; color: var(--ink); }
 .insert { color: var(--insert); font-style: italic; }
 .correction { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 1rem; line-height: 1.6; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 1rem 0; margin: 0 0 2rem; word-break: break-word; }
@@ -173,3 +173,45 @@ kbd { font-family: "IBM Plex Mono", monospace; font-size: 10.5px; opacity: .65; 
   .gate { padding: 16px; align-items: flex-start; overflow: auto; }
 }
 @media (prefers-reduced-motion: no-preference) { .status.busy::after { content: ""; } }
+
+/* voyager design (shared tokens and route footer). The home page takes the voyager look; the editor keeps its own chrome. */
+body.home { --paper:#070b16; --ink:#e8edf6; --rule:#33456b; --proof:#ff8f84; --insert:#9fd3ee; --muted:#9ba7bf; background:#070b16; color:var(--ink); font-family:"IBM Plex Sans", system-ui, sans-serif; font-size:17px; line-height:1.65; }
+body.home .wordmark { font-family:inherit; font-style:normal; font-weight:600; font-size:1.0625rem; }
+body.home .lead { font-size:1.66rem; line-height:1.2; font-weight:600; letter-spacing:-.02em; }
+body.home form.go button, body.home a.primary, body.home button.primary { background:#ffb547; color:#070b16; border-radius:999px; font-weight:600; padding:10px 20px; }
+body.home .drop { border-radius:12px; border-color:#33456b; }
+body.home a:focus-visible, body.home button:focus-visible, body.home input:focus-visible { outline-color:#ffb547; }
+.vg-mark { position:absolute; right:32px; top:24px; display:inline-flex; align-items:center; gap:.5rem; color:#9ba7bf; font:400 .85rem/1 "IBM Plex Sans", system-ui, sans-serif; text-decoration:none; }
+.vg-mark:hover { color:#e8edf6; }
+body:not(.home) .vg-mark, body:not(.home) .vg-foot { display:none; }
+.vg-foot { --bg:#070b16; --ink:#e8edf6; --muted:#9ba7bf; --amber:#ffb547; --ice:#9fd3ee; --line:#1b2640; --line-strong:#33456b; --s3:.75rem; --s5:1.5rem; --s6:2.5rem; --t-1:.85rem; --mono:"IBM Plex Mono", ui-monospace, monospace; --sans:"IBM Plex Sans", system-ui, sans-serif; font-family:var(--sans); }
+body.home .vg-foot a { color:var(--ice); }
+.vg-foot h2, .vg-foot p, .vg-foot ol { margin:0; padding:0; list-style:none; }
+/* footer: the route, then the small print */
+.vg-foot { width: min(100% - 3rem, 33rem); margin: 0 auto; padding-block: 2.5rem 3rem; border-top: 1px solid var(--line); color: var(--muted); font-size: var(--t-1); display: grid; gap: var(--s5); }
+.vg-route h2 { font-size: var(--t-1); font-weight: 600; color: var(--ink); margin-bottom: var(--s3); letter-spacing: 0; }
+.vg-steps { display: grid; gap: var(--s3); counter-reset: step; }
+.vg-steps li { position: relative; padding-left: 1.9rem; counter-increment: step; }
+.vg-steps li::before { content: counter(step); position: absolute; left: 0; top: .1rem; width: 1.25rem; height: 1.25rem; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--line-strong); color: var(--muted); font: 400 .72rem/1 var(--mono); background: var(--bg); z-index: 1; }
+.vg-steps li::after { content: ""; position: absolute; left: .625rem; top: 1.4rem; bottom: -.75rem; width: 1px; background: var(--line-strong); }
+.vg-steps li:last-child::after { display: none; }
+.vg-steps li.here::before { background: var(--amber); border-color: var(--amber); color: var(--bg); font-weight: 600; }
+.vg-steps a, .vg-steps .vg-name { font-weight: 600; color: var(--ink); text-decoration: none; }
+.vg-steps a:hover { text-decoration: underline; }
+.vg-steps .vg-name { color: var(--amber); }
+.vg-steps .vg-what { display: block; color: var(--muted); }
+.vg-side { margin-top: var(--s3); }
+.vg-legal { max-width: 46rem; }
+@media (min-width: 46rem) {
+  .vg-steps { grid-template-columns: repeat(3, 1fr); gap: var(--s5); }
+  .vg-steps li { padding: 1.9rem 0 0; }
+  .vg-steps li::before { top: 0; }
+  .vg-steps li::after { left: 1.5rem; right: -1.25rem; top: .625rem; bottom: auto; width: auto; height: 1px; }
+}
+.vg-foot .vg-side { margin-top:1rem; }
+/* arXiv's PDF while the build runs, and what happened when a build fails */
+.page { position: relative; }
+.pdfnote { position: absolute; z-index: 2; left: 12px; right: 12px; top: 8px; margin: 0; padding: 6px 10px; font: 13px/1.4 "IBM Plex Sans", system-ui, sans-serif; background: rgba(22, 21, 18, .94); color: #e9e4d8; border: 1px solid #4a463c; border-radius: 6px; }
+.pdfnote.bad { border-color: #d0574a; color: #ffd9d2; }
+.pdfnote:not([hidden]) + .pdf { padding-top: 56px; }
+.home .top { position: relative; }

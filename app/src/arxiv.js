@@ -10,9 +10,9 @@ export function parseId(s) {
 }
 // arXiv's terms ask for at most one automated request every 3 seconds: keep that even across tabs
 async function politeWait() {
-  const last = Number(localStorage.getItem('mt-last-arxiv') || 0); const wait = last + 3000 - Date.now();
-  if (wait > 0 && wait < 3000) await new Promise((r) => setTimeout(r, wait));
-  localStorage.setItem('mt-last-arxiv', String(Date.now()));
+  const last = Number(localStorage.getItem('mt-last-arxiv') || 0); const wait = Math.max(0, last + 3000 - Date.now());
+  localStorage.setItem('mt-last-arxiv', String(Date.now() + (wait <= 3000 ? wait : 0))); // book the slot before waiting, so a second call queues behind it
+  if (wait > 0 && wait <= 3000) await new Promise((r) => setTimeout(r, wait));
 }
 export async function fetchSource(id, onProgress) {
   await politeWait();
@@ -27,4 +27,11 @@ export async function fetchSource(id, onProgress) {
   for (;;) { const { done, value } = await reader.read(); if (done) break; parts.push(value); got += value.length; onProgress && onProgress(got, total); }
   const out = new Uint8Array(got); let o = 0; for (const p of parts) { out.set(p, o); o += p.length; }
   return out;
+}
+// arXiv's own PDF for the preview while the tab's build runs (arxiv.org/pdf/<id> also sends Access-Control-Allow-Origin: *)
+export async function fetchPdf(id) {
+  await politeWait();
+  const res = await fetch('https://arxiv.org/pdf/' + id);
+  if (!res.ok || !/pdf/.test(res.headers.get('content-type') || '')) throw new Error('arXiv PDF: HTTP ' + res.status);
+  return new Uint8Array(await res.arrayBuffer());
 }

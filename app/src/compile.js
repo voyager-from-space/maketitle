@@ -7,20 +7,20 @@ export class Compiler {
   constructor({ base, onDownload, onNet }) {
     this.base = base; this.onNet = onNet || (() => {}); this.onDownload = onDownload; this.netBytes = 0;
     this.marks = [];
-    this.runner = null; this.ready = null; this.restarts = 0; this.useExtra = false;
+    this.runner = null; this.ready = null; this.restarts = 0;
   }
-  // pick the preload set from the project, then start the engine: one module load instead of two when the big set is needed
-  async prepare(project) {
+  // TeX Live is one lazy "data package" (core/mt-texlive.js): files are fetched when TeX opens them, so there is no set to pick
+  async prepare() {
     if (this.ready) return this.ready;
-    if (!this.prep) this.prep = (async () => { this.useExtra = await this.needsExtra(project); this.runner = this.makeRunner(); return this.init(); })();
+    if (!this.prep) this.prep = (async () => { this.runner = this.makeRunner(); return this.init(); })();
     return this.prep;
   }
   makeRunner() {
-    const base = this.base;
+    const pkg = abs(this.base + 'core/mt-texlive.js');
     return new BusyTexRunner({
-      busytexBasePath: abs(base + 'core').replace(/\/$/, ''),
-      preloadDataPackages: this.useExtra ? [abs(base + 'core/texlive-recommended.js'), abs(base + 'core/texlive-extra.js')] : [abs(base + 'core/texlive-recommended.js')],
-      catalogDataPackages: [abs(base + 'core/texlive-recommended.js'), abs(base + 'core/texlive-extra.js')],
+      busytexBasePath: abs(this.base + 'core').replace(/\/$/, ''),
+      preloadDataPackages: [pkg],
+      catalogDataPackages: [pkg],
       onDownloadProgress: this.onDownload || (() => {}),
     });
   }
@@ -48,7 +48,9 @@ export class Compiler {
     if (!w || this._hooked === w) return;
     this._hooked = w;
     w.addEventListener('message', ({ data }) => {
-      if (data && data.mt_net != null) { this.netBytes = (this.netBase || 0) + data.mt_net; this.onNet(this.netBytes); }
+      if (data && data.mt_lazy) this.lazy = data.mt_lazy;
+      else if (data && data.mt_prefetch) this.prefetch = data.mt_prefetch;
+      else if (data && data.mt_net != null) { this.netBytes = (this.netBase || 0) + data.mt_net; this.onNet(this.netBytes); }
       else if (data && typeof data.print === 'string') this.marks.push({ t: performance.now(), msg: data.print });
     });
   }
@@ -57,63 +59,50 @@ export class Compiler {
     this.hookWorker();
     const Eng = project.engine === 'xe' ? XeLatex : project.engine === 'lua' ? LuaLatex : PdfLatex;
     const full = mode === 'full';
-    const plan = full ? project.bibPlan() : { bibtex: false, biber: false, why: mode === 'chapter' ? 'one file only: no bibliography run' : 'preview: one pass, no bibliography' };
+    let plan = full ? project.bibPlan() : { bibtex: false, biber: false, why: mode === 'chapter' ? 'one file only: no bibliography run' : 'preview: one pass, no bibliography' };
     // single-chapter build: the main preamble plus an \input of the open file
     const wrap = mode === 'chapter' && chapter ? project.chapterWrapper(chapter) : null;
     const main = wrap ? wrap.path : project.main;
-    const input = wrap ? wrap.text : project.files.get(main);
-    const files = wrap ? project.allFiles() : project.forCompile();
+    let input = wrap ? wrap.text : project.files.get(main);
+    let files = wrap ? project.allFiles() : project.forCompile();
     this.marks = [];
     const t0 = performance.now();
     let tool = new Eng(this.runner);
     let r, error = null;
-    if (!this.useExtra && await this.needsExtra(project)) this.useExtra = true;
-    const rec = abs(this.base + 'core/texlive-recommended.js'), extra = abs(this.base + 'core/texlive-extra.js');
+    const pkg = abs(this.base + 'core/mt-texlive.js');
     const attempt = async () => {
       this.marks = [];
       try {
         r = await tool.compile({
           input, mainTexPath: main, additionalFiles: files,
-          bibtex: plan.bibtex, biber: plan.biber, rerun: mode !== 'quick', dataPackagesJs: this.useExtra ? [rec, extra] : [rec],
+          bibtex: plan.bibtex, biber: plan.biber, rerun: mode !== 'quick', dataPackagesJs: [pkg],
         });
         error = null;
       } catch (e) { error = String(e && e.message || e); }
     };
     await attempt();
-    // the extra TeX Live set (pgfplots, beamer, biblatex, ...) is ~260 MB: only fetch it when the small set was not enough
-    if (!this.useExtra && !(r && r.success && r.pdf)) { this.firstTry = { error, ...parseLog(r), log: ((r && r.log) || '').slice(-1500) }; this.useExtra = true; this.retriedWithExtra = true; await attempt(); }
-    // "file not found" for a file the TeX Live sets do provide means a cached data package did not mount: restart the worker, once or twice
-    const missing = () => { const m = /File `([^']+?)(?:\.(?:sty|cls|def|cfg|clo|fd))?' not found/.exec((r && r.log) || ''); return m ? m[1].toLowerCase() : null; };
-    let engineRestarts = 0;
-    while (!(r && r.success && r.pdf) && engineRestarts < 2) {
-      const miss = missing(); const idx = this.index;
-      if (!miss || !idx || !(idx.extra.has(miss) || idx.rec.has(miss) || idx.basic.has(miss))) break;
-      engineRestarts++; this.useExtra = this.useExtra || idx.extra.has(miss);
-      await this.restart(); tool = new Eng(this.runner); await attempt();
+    // TeX Live 2026 defines \theH<counter> for every counter itself; papers written for older TeX Live often
+    // \newcommand it (the ICML template does), which is now a fatal error. Retry with \providecommand in a compile-only
+    // copy, at most 3 times, and say so. The project in the editor is not changed.
+    const compat = [];
+    for (let k = 0; k < 3 && !(r && r.success && r.pdf); k++) {
+      const m = /LaTeX Error: Command \\(theH[A-Za-z@]+) already defined/.exec((r && r.log) || '');
+      if (!m || compat.includes(m[1])) break;
+      const re = new RegExp('\\\\newcommand\\*?\\s*(\\{\\s*\\\\' + m[1] + '\\s*\\}|\\\\' + m[1] + '(?![A-Za-z@]))', 'g');
+      const fix = (t) => (typeof t === 'string' ? t.replace(re, '\\providecommand$1') : t);
+      const before = input + files.map((f) => (typeof f.content === 'string' ? f.content : '')).join('');
+      input = fix(input); files = files.map((f) => ({ path: f.path, content: fix(f.content) }));
+      if (input + files.map((f) => (typeof f.content === 'string' ? f.content : '')).join('') === before) break;
+      compat.push(m[1]); await attempt();
     }
     const totalMs = Math.round(performance.now() - t0);
     const passes = passTimes(this.marks);
     const log = (r && r.log) || '';
     return {
-      ok: !!(r && r.success && r.pdf), pdf: r && r.pdf, log, error, totalMs, passes, plan, mode, chapter: wrap ? chapter : null, initMs: this.initMs, engineRestarts,
-      usedExtra: !!this.useExtra, firstTry: this.firstTry, engine: project.engine === 'xe' ? 'XeLaTeX' : project.engine === 'lua' ? 'LuaLaTeX' : 'pdfLaTeX',
+      ok: !!(r && r.success && r.pdf), pdf: r && r.pdf, log, error, totalMs, passes, plan, mode, chapter: wrap ? chapter : null, initMs: this.initMs, engineRestarts: 0,
+      lazy: this.lazy, prefetch: this.prefetch, compat, engine: project.engine === 'xe' ? 'XeLaTeX' : project.engine === 'lua' ? 'LuaLaTeX' : 'pdfLaTeX',
       ...parseLog(r), netBytes: this.netBytes,
     };
-  }
-  // package names the project asks for that only the big "extra" TeX Live set provides
-  async needsExtra(project) {
-    if (!this.index) {
-      const get = async (n) => new Set([...(await (await fetch(abs(this.base + 'core/texlive-' + n + '.js.providespackage.txt'))).text()).matchAll(/\\ProvidesPackage\{([^}]+)\}/g)].map((m) => m[1].toLowerCase().trim()));
-      try { const [extra, rec, basic] = await Promise.all([get('extra'), get('recommended'), get('basic')]); this.index = { extra, rec, basic }; } catch { this.index = { extra: new Set(), rec: new Set(), basic: new Set() }; }
-    }
-    const { extra, rec, basic } = this.index;
-    for (const [p, t] of project.texts()) {
-      if (!/\.(tex|ltx|sty|cls)$/i.test(p)) continue;
-      for (const m of t.matchAll(/\\(?:usepackage|RequirePackage)\s*(?:\[[^\]]*\])?\s*\{([^}]*)\}/g)) {
-        for (const n of m[1].split(',').map((x) => x.trim().toLowerCase())) if (n && extra.has(n) && !rec.has(n) && !basic.has(n)) return true;
-      }
-    }
-    return false;
   }
   terminate() { try { this.runner && this.runner.terminate(); } catch {} }
 }

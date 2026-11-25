@@ -1,6 +1,6 @@
 # maketitle
 
-Swap `arxiv.org` for this site in any paper link and the paper's LaTeX source opens in an editor and compiles in your browser tab. You can also paste an arXiv id or drop a zip (Overleaf and Prism exports work). No account, no upload, no server compile.
+Swap `arxiv.org` for this site in a paper link and the paper's LaTeX source opens in an editor and compiles in your browser tab. You can also paste an arXiv id or drop a zip (Overleaf and Prism exports work). No account, no upload, no server compile.
 
     https://arxiv.org/abs/1706.03762
     https://maketitle.vercel.app/abs/1706.03762

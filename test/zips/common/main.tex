@@ -1,0 +1,27 @@
+\documentclass[11pt]{article}
+% a typical CS/ML/physics preamble; maketitle prefetches the TeX Live files this needs (scripts: maketitle-lazy/base-trace)
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{times}
+\usepackage{geometry}
+\usepackage{amsmath,amssymb,amsthm,amsfonts,mathtools,bm}
+\usepackage{graphicx,xcolor,booktabs,multirow,nicefrac,microtype,url,enumitem,float,wrapfig}
+\usepackage{caption,subcaption}
+\usepackage[numbers]{natbib}
+\usepackage{hyperref,cleveref}
+\newtheorem{theorem}{Theorem}
+\title{A Common Preamble}
+\author{Anon}
+\begin{document}
+\maketitle
+\begin{abstract}Short abstract with \emph{emphasis}, \textbf{bold} and $\alpha+\beta=\gamma$.\end{abstract}
+\section{Intro}\label{sec:intro}
+Text \cite{a} with math $\mathbb{R}^n$, $\mathcal{L}$, $\bm{x}$, $\nicefrac{1}{2}$ and \texttt{code}, \textsc{caps}, \textit{italic}. See \cref{sec:intro}.
+\begin{equation}\label{eq:1} \sum_{i=1}^n x_i^2 \leq \int_0^1 f(x)\,dx \end{equation}
+\begin{table}[h]\centering\begin{tabular}{lcc}\toprule A & B & C\\\midrule \multirow{2}{*}{x} & 1 & 2\\ & 3 & 4\\\bottomrule\end{tabular}\caption{T}\end{table}
+\begin{theorem}A theorem.\end{theorem}\begin{proof}Trivial.\end{proof}
+\begin{itemize}\item one\item two\end{itemize}
+\url{https://example.org}
+\bibliographystyle{plainnat}
+\bibliography{refs}
+\end{document}

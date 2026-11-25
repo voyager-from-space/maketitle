@@ -1,3 +1,4 @@
+const BBL_VERSION = '3.3'; // \blx@bblversion in TeX Live 2026's biblatex.sty
 // Project model: files, main file, engine and bibliography detection.
 const TEXT = /\.(tex|ltx|sty|cls|bib|bbl|bst|txt|md|cfg|clo|def|dtx|ins|json|ya?ml|csv|tsv|ini|toml|xml|lua|sh|py|r|m|ist|gl|ldf|fd|cbx|bbx|lbx|aux|tikz|pgf)$|(^|\/)(00README|README)[^/]*$/i;
 export const isText = (p) => TEXT.test(p);
@@ -40,9 +41,18 @@ export class Project {
   bibPlan() {
     const main = this.files.get(this.main) || '';
     const stem = this.main.replace(/\.tex$/i, '');
-    if (this.files.has(stem + '.bbl')) return { bibtex: false, biber: false, why: 'ready-made .bbl' };
     const all = this.texts().filter(([p]) => /\.(tex|ltx)$/i.test(p)).map(([, t]) => t).join('\n');
     const hasBib = [...this.files.keys()].some((p) => /\.bib$/i.test(p));
+    const bbl = this.files.get(stem + '.bbl');
+    if (bbl != null) {
+      // biblatex ignores a .bbl written for another format version (TeX Live 2026 reads 3.3), which leaves every citation
+      // undefined. Neighbouring versions differ only in fields old papers do not use, so the compile reads the paper's own
+      // .bbl with its version line raised (a compile-only copy); biber stays the fallback in compile.js.
+      const v = typeof bbl === 'string' && /biblatex bbl format version ([\d.]+)/.exec(bbl);
+      if (!v || v[1] === BBL_VERSION) return { bibtex: false, biber: false, why: 'ready-made .bbl' };
+      if (hasBib) { const bt = /backend\s*=\s*bibtex/.test(all); return { bibtex: true, biber: !bt, why: `the paper's .bbl is biblatex format ${v[1]}, TeX Live 2026 reads ${BBL_VERSION}: rebuilt with ${bt ? 'BibTeX' : 'biber'}` }; }
+      return { bibtex: false, biber: false, why: `ready-made .bbl (biblatex format ${v[1]}; TeX Live 2026 reads ${BBL_VERSION}, so citations may show as undefined)` };
+    }
     if (/\\usepackage(?:\[[^\]]*\])?\{[^}]*biblatex[^}]*\}/.test(all) && hasBib) {
       return /backend\s*=\s*bibtex/.test(all) ? { bibtex: true, biber: false, why: 'biblatex (bibtex backend)' } : { bibtex: true, biber: true, why: 'biblatex (biber)' };
     }

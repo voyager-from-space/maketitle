@@ -17,7 +17,7 @@ for (const id of ids) {
   try {
     await waitDone(page, 600000); await page.waitForTimeout(700);
     row.wallMs = Date.now() - t0;
-    Object.assign(row, await page.evaluate(() => { const l = window.__mt.last; return { ok: l.ok, pages: l.numPages, totalMs: l.totalMs, passes: l.passes, undefinedRefs: l.undefinedRefs, warnings: l.warnings, errors: (l.errors || []).slice(0, 3), engine: l.engine, usedExtra: l.usedExtra, firstTry: l.firstTry && l.firstTry.errors && l.firstTry.errors.slice(0,2), plan: l.plan && l.plan.why, firstLoadMB: window.__mt.firstLoadBytes ? +(window.__mt.firstLoadBytes / 1048576).toFixed(1) : null, initMs: window.__mt.initMs, fetchMs: window.__mt.fetchMs, main: window.__mt.project.main, files: window.__mt.project.files.size, leaks: window.__mt.leaks.length, err: l.error || null }; }));
+    Object.assign(row, await page.evaluate(() => { const l = window.__mt.last; return { ok: l.ok, pages: l.numPages, totalMs: l.totalMs, passes: l.passes, undefinedRefs: l.undefinedRefs, warnings: l.warnings, errors: (l.errors || []).slice(0, 3), engine: l.engine, lazy: l.lazy, prefetch: l.prefetch, plan: l.plan && l.plan.why, firstLoadMB: window.__mt.firstLoadBytes ? +(window.__mt.firstLoadBytes / 1048576).toFixed(1) : null, initMs: window.__mt.initMs, fetchMs: window.__mt.fetchMs, main: window.__mt.project.main, files: window.__mt.project.files.size, leaks: window.__mt.leaks.length, err: l.error || null }; }));
     if (demo && id === '1706.03762') {
       const gate = await page.$('#gate-ok'); if (gate && await gate.isVisible()) await gate.click();
       row.titleBefore = await page.evaluate(() => window.__mt.project.title());

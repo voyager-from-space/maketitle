@@ -1,7 +1,7 @@
 import { zipSync } from 'fflate';
 import { Project } from './project.js';
 import { unpack } from './archive.js';
-import { parseId, fetchSource } from './arxiv.js';
+import { parseId, fetchSource, fetchPdf } from './arxiv.js';
 import { scanText, mask } from './leak.js';
 import { Compiler } from './compile.js';
 import { Editor } from './editor.js';
@@ -39,9 +39,9 @@ function renderHome() {
   document.body.className = 'home';
   const host = location.host + BASE.replace(/\/$/, '');
   $('#app').innerHTML = `
-    <header class="top"><a class="wordmark" href="${BASE}">maketitle</a></header>
+    <header class="top"><a class="wordmark" href="${BASE}">maketitle</a><a class="vg-mark" href="https://voyager-from-space.github.io" aria-label="voyager home"><svg viewBox="0 0 32 32" width="20" height="20" aria-hidden="true"><circle cx="16" cy="16" r="14.5" fill="none" stroke="#9fd3ee" stroke-width="1.5"/><circle cx="16" cy="16" r="10" fill="none" stroke="#9fd3ee" stroke-opacity=".5"/><circle cx="16" cy="16" r="5" fill="#ffb547"/><circle cx="16" cy="16" r="1.3" fill="#070b16"/></svg><span>voyager</span></a></header>
     <main>
-      <p class="lead">Put this address where arxiv.org was in any paper link. The LaTeX source opens in an editor and compiles in this tab.</p>
+      <h1 class="lead">Put this address where arxiv.org was in a paper link. Its LaTeX source opens in an editor and compiles in this tab.</h1>
       <p class="correction" aria-label="Example: swap the host, keep the path">
         <span class="strike">arxiv.org</span> <span class="insert"></span><span class="path">/abs/1706.03762</span>
       </p>
@@ -53,8 +53,20 @@ function renderHome() {
       <p class="error" id="err" role="alert" hidden></p>
       <label class="drop" id="drop" tabindex="0">Or drop a zip with a LaTeX project here, or <u>choose one</u>.<input id="zip" type="file" accept=".zip,.gz,.tgz,.tar,.tar.gz" hidden></label>
       <section class="saved" id="saved" hidden><h2>In this browser</h2><ul id="savedl"></ul></section>
-      <p class="hint">No account. Nothing is uploaded: the TeX engine runs on your computer. The first compile downloads TeX Live: about 167 MB for a plain article, about 417 MB when the paper uses common packages such as multirow or tabulary. Your browser keeps it, so later visits are fast and papers you opened still open and compile with no connection.</p>
-    </main>`;
+      <p class="hint">No account. Nothing is uploaded: the TeX engine runs on your computer. The first compile downloads about 20 MB, the engine plus only the TeX Live files the paper opens. Your browser keeps them, so a paper you opened still opens and compiles with no connection.</p>
+      <p class="hint">Not every paper builds here. Of 33 well-known arXiv papers tried in November 2026, 29 built. The other 4 need a file TeX Live does not include, an older TeX Live, or a converter that cannot run in a browser. While a paper builds, and if it fails, you see arXiv's own PDF.</p>
+    </main>
+<footer class="vg-foot">
+  <nav class="vg-route" aria-label="The voyager LaTeX route">
+    <h2>One route for a paper</h2>
+    <ol class="vg-steps">
+      <li><a href="https://texdiet.vercel.app/">texdiet</a><span class="vg-what">Slim the project so it compiles faster.</span></li>
+      <li><a href="https://voyager-from-space.github.io/papershed/">papershed</a><span class="vg-what">Clean the zip before you post it.</span></li>
+      <li class="here" aria-current="step"><span class="vg-name">maketitle</span><span class="vg-what">Open an arXiv paper's LaTeX source and compile it in the tab.</span></li>
+    </ol>
+    <p class="vg-side">Submitting double-blind? <a href="https://voyager-from-space.github.io/blindsanitize/">blindsanitize</a> checks the source, PDF and extra files for anything that points to the authors.</p>
+  </nav>
+</footer>`;
   $('.insert').textContent = host;
   const err = (m) => { const e = $('#err'); e.textContent = m; e.hidden = !m; };
   $('#go').addEventListener('submit', (e) => {
@@ -110,7 +122,7 @@ function renderEditor(label, view) {
     <div class="panes" data-tab="source" id="panes">
       <nav class="tree" aria-label="Project files"><h2>Files</h2><ul id="files"></ul></nav>
       <section class="source" aria-label="Source"><div id="cm"></div><div class="gate" id="gate" hidden></div></section>
-      <section class="page" aria-label="Preview"><div class="pdf" id="pdf"><div class="sheet"><p class="sheet-kicker" id="sheetk">Waiting for the source</p></div></div></section>
+      <section class="page" aria-label="Preview"><p class="pdfnote" id="pdfnote" role="status" hidden></p><div class="pdf" id="pdf"><div class="sheet"><p class="sheet-kicker" id="sheetk">Waiting for the source</p></div></div></section>
       <aside class="timingp" id="timingp" aria-label="Build timing" hidden></aside>
     </div>
     <div class="problems" id="problems" hidden></div>
@@ -217,6 +229,7 @@ async function start() {
   if (!r) return renderHome();
   if (r.bad) { renderHome(); const e = $('#err'); e.textContent = 'That path is not an arXiv id: ' + r.bad; e.hidden = false; return; }
   state.project = null; state.last = null; state.history = []; state.edited = false; state.busy = false; state.timingOpen = false;
+  state.ownPdf = false; state.arxivPdf = false; state.failWhy = null; state.openGen = (state.openGen || 0) + 1;
   state.id = r.id || null; state.key = r.key || r.id; state.label = r.id || r.key.replace(/^zip:/, '');
   renderEditor(state.label, r.view);
   setTab(r.view === 'pdf' ? 'pdf' : 'source');
@@ -230,13 +243,16 @@ async function start() {
     state.edited = !!rec.edited; state.savedFrom = rec.savedAt; state.fromSaved = true; state.fetchMs = Math.round(performance.now() - t0);
     const restart = h('button', { type: 'button', onclick: () => discardAndRefetch() }, r.id ? 'Start over from arXiv' : 'Discard my copy');
     notice((rec.edited ? 'Opened your edited copy saved in this browser ' : 'Opened the copy saved in this browser ') + ago(rec.savedAt) + '.', restart, h('button', { type: 'button', onclick: () => notice('') }, 'Dismiss'));
+    if (r.id) showArxivPdf(r.id, !!rec.edited);
     return loaded(project);
   }
   if (!r.id) { renderHome(); const e = $('#err'); e.textContent = 'That project is not saved in this browser any more.'; e.hidden = false; return; }
   state.fromSaved = false;
   try {
     status('Fetching source…', 'busy');
-    const bytes = await fetchSource(r.id, (got, total) => status(`Fetching source… ${mb(got)}${total ? ' / ' + mb(total) : ''} MB`, 'busy'));
+    const src = fetchSource(r.id, (got, total) => status(`Fetching source… ${mb(got)}${total ? ' / ' + mb(total) : ''} MB`, 'busy'));
+    showArxivPdf(r.id, false); // queued 3 s behind the source request
+    const bytes = await src;
     state.fetchMs = Math.round(performance.now() - t0);
     const u = unpack(bytes);
     if (u.kind === 'pdf') return fail('This paper has no LaTeX source on arXiv, only a PDF. The author did not upload source, so there is nothing to open.');
@@ -245,6 +261,21 @@ async function start() {
     fail(navigator.onLine ? e.message : 'You are offline and this paper is not saved in this browser yet. Open it once while online and it will open here with no connection.');
   }
 }
+// arXiv's own PDF (it answers with Access-Control-Allow-Origin: *), shown until this tab's build is ready, and kept when the
+// build fails, so the preview pane is never blank. It waits its turn behind the source request (one arXiv request per 3 s).
+async function showArxivPdf(id, edited) {
+  const gen = state.openGen = (state.openGen || 0) + 1;
+  const sk = $('#sheetk'); if (sk) sk.textContent = 'Fetching arXiv\'s PDF while TeX Live loads…';
+  let bytes;
+  try { bytes = await fetchPdf(id); } catch { if (sk && gen === state.openGen && !state.ownPdf) sk.textContent = 'Building the PDF in this tab…'; return; }
+  if (gen !== state.openGen || state.ownPdf) return; // the tab's own build got there first, or another paper opened
+  try { await state.preview.show(bytes); } catch { return; }
+  if (state.ownPdf) return;
+  state.arxivPdf = true;
+  if (state.failWhy) return pdfNote('The build in this tab failed (' + state.failWhy + '). The PDF below is arXiv\'s own.', 'bad'); // the build failed before arXiv answered
+  pdfNote(edited ? 'arXiv\'s PDF, from before your edits. Your build replaces it when it finishes.' : 'arXiv\'s own PDF. The build from this source replaces it when it finishes.');
+}
+function pdfNote(msg, kind = '') { const n = $('#pdfnote'); if (!n) return; n.textContent = msg || ''; n.hidden = !msg; n.className = 'pdfnote ' + kind; }
 async function discardAndRefetch() {
   try { await store.del(state.key); } catch {}
   state.edited = false; start();
@@ -255,6 +286,7 @@ async function openBytes(bytes, name, hint) {
   const p = new Project(u.files, { zip: name });
   if (!p.main) throw new Error('No .tex file with \\documentclass and \\begin{document} in that archive.');
   state.project = null; state.last = null; state.history = []; state.edited = false; state.busy = false; state.fromSaved = false;
+  state.ownPdf = false; state.arxivPdf = false; state.failWhy = null; state.openGen = (state.openGen || 0) + 1;
   state.id = null; state.label = name || 'zip'; state.key = 'zip:' + state.label;
   renderEditor(state.label, 'abs'); startEngine(); history.replaceState({}, '', BASE + '?p=' + encodeURIComponent(state.key));
   setTab('source');
@@ -331,12 +363,22 @@ async function compile(first = false) {
   state.last = r; state.busy = false; $('#run').disabled = false;
   r.at = new Date(); r.n = state.history.length + 1; state.history.push(r);
   if (r.ok) {
+    state.ownPdf = true; state.failWhy = null; pdfNote('');
     const pages = await state.preview.show(r.pdf);
     r.numPages = pages; r.pdfBytes = r.pdf.length; $('#dlpdf').disabled = false; r.shown = true;
     const scope = r.chapter ? ` · ${r.chapter} only` : r.mode === 'quick' ? ' · preview' : '';
     status(`Compiled in ${(r.totalMs / 1000).toFixed(1)} s · ${pages} page${pages === 1 ? '' : 's'}${scope}`, 'ok');
+    if (r.compat && r.compat.length && !state.compatNoted) { state.compatNoted = true; notice('Built with ' + r.compat.map((c) => '\\newcommand{\\' + c + '}').join(', ') + ' read as \\providecommand: this paper was written for an older TeX Live, and TeX Live 2026 already defines it. Your source is unchanged.', h('button', { type: 'button', onclick: () => notice('') }, 'Dismiss')); }
+    const sub = (r.lazy && r.lazy.aliasUsed) || [];
+    if (sub.length && !state.substNoted) { state.substNoted = true; notice('Built with a stand-in font for ' + sub.map((f) => f.replace(/\.tfm$/, '')).join(', ') + ': ' + (sub.some((f) => /^cmttb/.test(f)) ? 'bold typewriter text is drawn in regular weight' : 'blackboard bold is drawn with the doublestroke outlines') + '. Those fonts exist only as METAFONT sources, which cannot run in a browser tab. arXiv\'s own PDF uses the real ones.', h('button', { type: 'button', onclick: () => notice('') }, 'Dismiss')); }
     if (first && state.narrow.matches && state.view === 'abs' && state.tab === 'source' && !state.gate) setTab('pdf');
   } else r.shown = true;
+  if (!r.ok) {
+    const why = r.error || (r.errors[0] ? r.errors[0].msg : 'see the log below'); state.failWhy = why;
+    if (state.ownPdf) pdfNote('This build failed (' + why + '). The PDF below is your last good build.', 'bad');
+    else if (state.arxivPdf) pdfNote('The build in this tab failed (' + why + '). The PDF below is arXiv\'s own.', 'bad');
+    else { const sk = $('#sheetk'); if (sk) sk.textContent = 'The build failed: ' + why + '. The problems are listed below the editor.'; }
+  }
   if (!r.ok) { status(r.error ? 'Compile failed' : `Compile failed: ${r.errors[0] ? r.errors[0].msg : 'see log'}`, 'bad'); if (state.narrow.matches && state.view === 'abs') setTab('source'); }
   renderMeter(r); renderProblems(r); if (state.timingOpen) renderTiming();
   if (state.dirty) compile();

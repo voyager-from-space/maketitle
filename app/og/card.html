@@ -1,0 +1,20 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+@font-face { font-family: "EB Garamond"; src: url(../public/fonts/EBGaramond-Latin.woff2); }
+@font-face { font-family: "EB Garamond"; font-style: italic; src: url(../public/fonts/EBGaramond-Italic-Latin.woff2); }
+@font-face { font-family: "IBM Plex Mono"; src: url(../public/fonts/IBMPlexMono-Regular-Latin1.woff2); }
+@font-face { font-family: "IBM Plex Sans"; src: url(../public/fonts/IBMPlexSans-Regular-Latin1.woff2); }
+html, body { margin: 0; }
+body { width: 1200px; height: 630px; background: #f7f7f4; color: #171614; font-family: "EB Garamond", serif; position: relative; overflow: hidden; }
+.mark { position: absolute; left: 88px; top: 64px; font-style: italic; font-size: 40px; }
+.fix { position: absolute; left: 88px; right: 88px; top: 160px; border-top: 2px solid #8a8578; border-bottom: 2px solid #8a8578; padding: 96px 0 40px; font-family: "IBM Plex Mono", monospace; font-size: 46px; line-height: 1; white-space: nowrap; }
+.old { position: relative; text-decoration: line-through; text-decoration-color: #c41e3a; text-decoration-thickness: 4px; text-decoration-skip-ink: none; }
+.new { position: absolute; left: 0; bottom: 100%; margin-bottom: 10px; font-family: "EB Garamond", serif; font-style: italic; font-size: 50px; color: #1f4e79; white-space: nowrap; }
+.caret { color: #1f4e79; font-family: "EB Garamond", serif; }
+.lead { position: absolute; left: 88px; right: 88px; top: 410px; font-size: 44px; line-height: 1.22; }
+.small { position: absolute; left: 88px; bottom: 56px; font-family: "IBM Plex Sans", sans-serif; font-size: 24px; color: #5f5b52; }
+</style></head><body>
+<div class="mark">maketitle</div>
+<div class="fix">https://<span class="old"><span class="new">maketitle.vercel.app</span>arxiv.org</span>/abs/1706.03762</div>
+<div class="lead">The paper's LaTeX source opens in an editor and compiles in your browser tab.</div>
+<div class="small">No account. Nothing uploaded.</div>
+</body></html>

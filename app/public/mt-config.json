@@ -1,1 +1,15 @@
-{ "assets": "https://voyager-from-space.github.io/maketitle-assets/" }
+{
+ "tl": {
+  "mirrors": [
+   "https://cdn.jsdelivr.net/gh/voyager-from-space/maketitle-tl-{s}@tl1/",
+   "https://voyager-from-space.github.io/maketitle-texlive/"
+  ],
+  "index": "index-83a3830aa79c.json.gz",
+  "files": {
+   "biber.wasm": "e/biber-08ad607149d5.wasm.gz",
+   "biber.data": "e/biber-47ee5c706d99.data.gz",
+   "busytex.wasm": "e/busytex-ed4cd29b3eff.wasm.gz"
+  },
+  "overlay": "overlay-2afd70e8f9d6549a.json.gz"
+ }
+}
