@@ -42,7 +42,7 @@ var wt=Uint8Array,qt=Uint16Array,la=Int32Array,Nn=new wt([0,0,0,0,0,0,0,0,1,1,1,
       <label class="drop" id="drop" tabindex="0">Or drop a zip with a LaTeX project here, or <u>choose one</u>.<input id="zip" type="file" accept=".zip,.gz,.tgz,.tar,.tar.gz" hidden></label>
       <section class="saved" id="saved" hidden><h2>In this browser</h2><ul id="savedl"></ul></section>
       <p class="hint">No account. Nothing is uploaded: the TeX engine runs on your computer. The first compile downloads about 20 MB, the engine plus only the TeX Live files the paper opens. Your browser keeps them, so a paper you opened still opens and compiles with no connection.</p>
-      <p class="hint">Not every paper builds here. Of 33 well-known arXiv papers tried in November 2026, 29 built. The other 4 need a file TeX Live does not include, an older TeX Live, or a converter that cannot run in a browser. While a paper builds, and if it fails, you see arXiv's own PDF.</p>
+      <p class="hint">Not every paper builds here. Of 33 well-known arXiv papers tried on this site on 25 November 2026, 28 built on the first try and 1 more on a second try. The other 4 need a file TeX Live does not include, an older TeX Live, or a converter that cannot run in a browser. While a paper builds, and if it fails, you see arXiv's own PDF.</p>
     </main>
 <footer class="vg-foot">
   <nav class="vg-route" aria-label="The voyager LaTeX route">
