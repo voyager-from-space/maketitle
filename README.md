@@ -23,24 +23,42 @@ Live: https://maketitle.vercel.app/ (static deploy on Vercel, no functions). Mir
 
 ## First-load size
 
-Measured in Chrome (headless) on the build box, from the live site, counting bytes over the network:
+Measured in headless Chrome on the build box against the live site (fresh browser profile, 25 Nov 2026), counting bytes over the network:
 
 | Case | Downloaded |
 |---|---|
-| Plain article (amsmath, graphicx), engine plus the recommended TeX Live set | 166.5 MB |
-| The five test papers below, which each need the extra set (multirow, tabulary, nicefrac, tcolorbox, environ) | 416.6 MB |
-| Later visits in the same browser (TeX Live data in IndexedDB, engine .wasm in Cache Storage) | 0 MB of TeX Live; the service worker keeps about 15 MB of this site's own scripts |
+| 1706.03762 (Attention Is All You Need), first visit, everything | 24.5 MB: 20.7 MB TeX Live and engine, 0.5 MB this site, 3.4 MB from arXiv (source and PDF) |
+| 2005.14165 (GPT-3), TeX Live and engine | 21.1 MB |
+| Later visits in the same browser | 0 MB of TeX Live (Cache Storage `mt-tl-v1`); the service worker keeps this site's own scripts |
 
-1 MB here is 1,048,576 bytes. Files are stored gzip-compressed and unpacked in the browser. The counter covers the TeX Live files from the assets site, not this site's own scripts.
+Before November 2026 a first visit pulled whole TeX Live bundles: 166.5 MB for a plain article and 416.6 MB for most papers. Now the engine reads TeX Live one file at a time: an index of 23,796 files points into gzip packs of at most 512 KB, the packages named in `\usepackage` are fetched in parallel before the build, and any other file is fetched the first time TeX opens it. 1 MB here is 1,000,000 bytes.
 
-Memory: with the extra set loaded the tab is heavy. Chrome on the build box held about 1.3 GB for it when the box ran out of memory once. Not tested on low-memory machines.
+## Which papers build
+
+`test/papers-30.txt` lists 33 well-known arXiv papers. On the live site on 25 Nov 2026, 28 built on the first try. 2205.14135 timed out once and built on a second try (34 pages, 18.5 s). 4 fail:
+
+| Paper | Why |
+|---|---|
+| 1502.03167 | EPS figures need a converter (epstopdf/Ghostscript) that does not run in the browser |
+| 2203.02155 | uses `pythonhighlight.sty`, which is not in TeX Live |
+| 1907.11692 | a package patch written for an older TeX Live fails ("patch failed") |
+| 1207.7214 | loads a package inside a group, which the 2026 LaTeX kernel rejects |
+
+When a build fails, or while it is still running, the PDF pane shows arXiv's own PDF with a note saying so. It is never blank.
+
+Older papers get three compatibility steps, each reported on screen: METAFONT-only fonts are swapped for close Type 1 fonts (cmttb10 becomes cmtt10, bbm becomes doublestroke), a "`\theH...` already defined" error is retried with `\providecommand`, and a `.bbl` written by another biblatex version is rebuilt with biber.
+
+## Is this new?
+
+Only as a combination. Swapping the domain in an arXiv link is something alphaXiv already does, and other sites already compile arXiv papers in the browser. What maketitle puts together is: the swapped link, the full source in an editor, the compile on your own machine, and offline use after one visit.
 
 ## Where things live
 
 - App, primary: Vercel project `maketitle`, a static deploy of `node build.mjs --base /` (`app/vercel.json` rewrites `/abs/<id>` and `/pdf/<id>` to the app). No functions, no proxy.
 - App, mirror: GitHub Pages of this repo, branch `gh-pages` (built by `scripts/deploy-pages.sh`, base `/maketitle/`).
-- Engine and TeX Live data: [voyager-from-space/maketitle-assets](https://github.com/voyager-from-space/maketitle-assets), served from GitHub Pages as gzip streams cut into 80 MB parts (Pages rejects files over 100 MB). `app/public/core/busytex_worker.js` answers the engine's `fetch()` for `.data` and `.wasm` files by downloading the parts in order and gunzipping them with `DecompressionStream`.
-- GitHub Releases were tried first for the big files and do not work: the download redirect carries no CORS headers, so a browser page cannot fetch it.
+- TeX Live and the engine: two repos, [maketitle-tl-a](https://github.com/voyager-from-space/maketitle-tl-a) and [maketitle-tl-b](https://github.com/voyager-from-space/maketitle-tl-b), each a half of the tree under jsDelivr's 150 MB per-repo limit, served at `cdn.jsdelivr.net/gh/voyager-from-space/maketitle-tl-{a,b}@tl1/`. If jsDelivr fails for a file, the worker fetches it from the GitHub Pages copy in [maketitle-texlive](https://github.com/voyager-from-space/maketitle-texlive). The mirror list is `app/public/mt-config.json`.
+- Extra CTAN packages that TeX Live's BusyTeX build lacks (inconsolata, newtx, algorithms, algorithmicx, llncs, elsarticle, mhchem, bbm, doublestroke and a few more) are in an overlay built by `scripts/texlive/build-overlay.mjs`.
+- GitHub Releases do not work for these files: the download redirect carries no CORS headers.
 
 ## Build
 
@@ -53,6 +71,7 @@ Memory: with the extra set loaded the tab is heavy. Chrome on the build box held
 
     node scripts/verify.mjs https://maketitle.vercel.app/ 1706.03762 --demo
     node scripts/verify-zip.mjs https://maketitle.vercel.app/ test/zips/plain.zip
+    node scripts/first-visit.mjs https://maketitle.vercel.app/ 1706.03762   # bytes per host on a fresh profile
     node scripts/features.mjs https://maketitle.vercel.app/ 1706.03762   # modes, timing panel, autosave, /pdf view, offline, phone layout
     scripts/check-identity.sh
 
