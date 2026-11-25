@@ -1,11 +1,11 @@
 // maketitle service worker: keeps the app and the TeX engine files so a paper you already opened works with no connection.
 const BASE = '/maketitle/';
-const PRECACHE = ["app.css","app.js","core/biber.js","core/busytex.js","core/busytex_biber.js","core/busytex_pipeline.js","core/busytex_worker.js","core/busytex_worker_real.js","core/texlive-basic.js","core/texlive-basic.js.providespackage.txt","core/texlive-extra.js","core/texlive-extra.js.providespackage.txt","core/texlive-recommended.js","core/texlive-recommended.js.providespackage.txt","core/texmf.cnf","favicon.svg","fonts/EBGaramond-Italic-Latin.woff2","fonts/EBGaramond-Latin.woff2","fonts/IBMPlexMono-Regular-Latin1.woff2","fonts/IBMPlexSans-Regular-Latin1.woff2","fonts/IBMPlexSans-SemiBold-Latin1.woff2","index.html","mt-config.json","pdf.worker.min.mjs"]; // every file the app and the engine load from this origin
-const VERSION = '5a3adab19f';
+const PRECACHE = ["app.css","app.js","core/busytex.js","core/busytex_pipeline.js","core/busytex_worker.js","core/busytex_worker_real.js","core/mt-lazy.js","core/mt-texlive.js","core/texmf.cnf","favicon.svg","fonts/EBGaramond-Italic-Latin.woff2","fonts/EBGaramond-Latin.woff2","fonts/IBMPlexMono-Regular-Latin1.woff2","fonts/IBMPlexSans-Regular-Latin1.woff2","fonts/IBMPlexSans-SemiBold-Latin1.woff2","index.html","mt-config.json","pdf.worker.min.mjs"]; // every file the app and the engine load from this origin
+const VERSION = '98e939435f';
 const SHELL = 'mt-shell-' + VERSION;
 const CORE = 'mt-core-v2'; // engine files: large and rarely changing, kept across app updates
 const scope = self.registration.scope;
-const heavy = (url) => /\/core\/(texlive-[a-z]+\.js(\.providespackage\.txt)?|busytex\.js|texmf\.cnf)$/.test(url.pathname) || /\/fonts\//.test(url.pathname);
+const heavy = (url) => /\/core\/(busytex\.js|biber\.js|busytex_biber\.js|texmf\.cnf)$/.test(url.pathname) || /\/fonts\//.test(url.pathname);
 
 self.addEventListener('install', (e) => {
   e.waitUntil((async () => {

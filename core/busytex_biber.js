@@ -64,7 +64,7 @@ class BusytexBiber {
 
         const bcf = basename(bcf_path);
         const bbl = bcf.replace(/\.bcf$/, '.bbl');
-        const argv = [this.bin_biber, '--output-format=bbl', `--outfile=${bbl}`, '--nolog', ...verbose_args, bcf];
+        const argv = [this.bin_biber, '--output-format=bbl', `--outfile=${bbl}`, '--nolog', '--input-encoding=UTF-8', '--output-encoding=UTF-8', '--output-safechars', ...verbose_args, bcf]; // maketitle: name the encodings, perl has no locale here
 
         const cmdline = '$ biber ' + argv.slice(1).join(' ');
         this.last_output += cmdline + '\n';
